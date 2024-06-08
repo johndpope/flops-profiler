@@ -882,20 +882,18 @@ def _instance_norm_flops_compute(
     return input.numel() * (5 if has_affine else 4), 0
 
 
-def _upsample_flops_compute(input, **kwargs):
-    size = kwargs.get('size', None)
+def _upsample_flops_compute(input, size=None, scale_factor=None, mode='nearest', align_corners=None):
     if size is not None:
         if isinstance(size, tuple) or isinstance(size, list):
             return int(_prod(size)), 0
         else:
             return int(size), 0
-    scale_factor = kwargs.get('scale_factor', None)
     assert scale_factor is not None, 'either size or scale_factor should be defined'
     flops = input.numel()
-    if isinstance(scale_factor, tuple) and len(scale_factor) == len(input):
-        flops * int(_prod(scale_factor))
+    if isinstance(scale_factor, tuple) and len(scale_factor) == len(input.shape[2:]):
+        flops *= int(_prod(scale_factor))
     else:
-        flops * scale_factor**len(input)
+        flops *= scale_factor ** len(input.shape[2:])
     return flops, 0
 
 
